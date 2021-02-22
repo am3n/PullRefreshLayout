@@ -10,7 +10,7 @@ Add dependency.
 
 ```
 dependencies {
-    compile 'ir.am3n.pullrefreshlayout:pullrefreshlayout:1.0.0'
+    implementation 'com.github.am3n:PullRefreshLayout:1.0.0'
 }
 ```
 
