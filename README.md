@@ -10,7 +10,7 @@ Add dependency.
 
 ```
 dependencies {
-    compile 'com.baoyz.pullrefreshlayout:library:1.2.0'
+    compile 'ir.am3n.pullrefreshlayout:pullrefreshlayout:1.0.0'
 }
 ```
 
