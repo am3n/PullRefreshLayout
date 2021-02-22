@@ -64,7 +64,7 @@ In xml, use attributes.
     android:id="@+id/swipeRefreshLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-	app:refreshType="water_drop">
+    app:refreshType="water_drop">
 	
 </ir.am3n.pullrefreshlayout.PullRefreshLayout>
 
