@@ -13,7 +13,6 @@ import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.view.animation.Transformation;
-import android.widget.AbsListView;
 import android.widget.ImageView;
 
 import androidx.core.view.MotionEventCompat;
@@ -52,6 +51,8 @@ public class PullRefreshLayout extends ViewGroup {
     private OnErrorListener onErrorListener;
     private int[] mColorSchemeColors;
 
+    public boolean autoCancellationEnabled = false;
+    public long autoCancellationTimeout = 10 * 1000;
     public int mDurationToStartPosition;
     public int mDurationToCorrectPosition;
     private int mInitialOffsetTop;
@@ -105,7 +106,7 @@ public class PullRefreshLayout extends ViewGroup {
     }
 
     public void setRefreshStyle(int type) {
-        setRefreshing(false);
+        setRefreshing(false, false);
         switch (type) {
             case STYLE_MATERIAL:
                 mRefreshDrawable = new MaterialDrawable(getContext(), this);
@@ -130,7 +131,7 @@ public class PullRefreshLayout extends ViewGroup {
     }
 
     public void setRefreshDrawable(RefreshDrawable drawable) {
-        setRefreshing(false);
+        setRefreshing(false, false);
         mRefreshDrawable = drawable;
         mRefreshDrawable.setColorSchemeColors(mColorSchemeColors);
         mRefreshView.setImageDrawable(mRefreshDrawable);
@@ -182,7 +183,7 @@ public class PullRefreshLayout extends ViewGroup {
         switch (action) {
             case MotionEvent.ACTION_DOWN:
                 if (!mRefreshing) {
-                    setTargetOffsetTop(0, true);
+                    setTargetOffsetTop(0);
                 }
                 mActivePointerId = MotionEventCompat.getPointerId(ev, 0);
                 mIsBeingDragged = false;
@@ -300,7 +301,7 @@ public class PullRefreshLayout extends ViewGroup {
                             mRefreshDrawable.setPercent(mDragPercent);
                         }
                     }
-                    setTargetOffsetTop(targetY - mCurrentOffsetTop, true);
+                    setTargetOffsetTop(targetY - mCurrentOffsetTop);
                     break;
                 }
                 case MotionEventCompat.ACTION_POINTER_DOWN:
@@ -334,10 +335,8 @@ public class PullRefreshLayout extends ViewGroup {
                             animateOffsetToStartPosition();
                         }
                         mActivePointerId = INVALID_POINTER;
-                        return false;
-                    } else {
-                        return false;
                     }
+                    return false;
                 }
             }
         } catch (Throwable t) {
@@ -384,24 +383,27 @@ public class PullRefreshLayout extends ViewGroup {
             int endTarget = mSpinnerFinalOffset;
             int targetTop = (mFrom + (int) ((endTarget - mFrom) * interpolatedTime));
             int offset = targetTop - mTarget.getTop();
-            setTargetOffsetTop(offset, false /* requires update */);
+            setTargetOffsetTop(offset);
         }
     };
 
     private void moveToStart(float interpolatedTime) {
         int targetTop = mFrom - (int) (mFrom * interpolatedTime);
         int offset = targetTop - mTarget.getTop();
-        setTargetOffsetTop(offset, false);
+        setTargetOffsetTop(offset);
         mRefreshDrawable.setPercent(mDragPercent * (1 - interpolatedTime));
     }
 
-    public void setRefreshing(boolean refreshing) {
-        if (mRefreshing != refreshing) {
-            setRefreshing(refreshing, false /* notify */);
-        }
+    public void cancelRefreshing() {
+        setRefreshing(false, false);
     }
 
-    private void setRefreshing(boolean refreshing, final boolean notify) {
+    public void setRefreshing() {
+        setRefreshing(true, false);
+    }
+
+    private void setRefreshing(boolean refreshing, boolean notify) {
+        removeCallbacks(autoCancellationRunnable);
         if (mRefreshing != refreshing) {
             mNotify = notify;
             ensureTarget();
@@ -409,13 +411,18 @@ public class PullRefreshLayout extends ViewGroup {
             if (mRefreshing) {
                 mRefreshDrawable.setPercent(1f);
                 animateOffsetToCorrectPosition();
+                if (autoCancellationEnabled) {
+                    postDelayed(autoCancellationRunnable, autoCancellationTimeout);
+                }
             } else {
                 animateOffsetToStartPosition();
             }
         }
     }
 
-    private Animation.AnimationListener mRefreshListener = new Animation.AnimationListener() {
+    private final Runnable autoCancellationRunnable = () -> setRefreshing(false, false);
+
+    private final Animation.AnimationListener mRefreshListener = new Animation.AnimationListener() {
         @Override
         public void onAnimationStart(Animation animation) {
             mRefreshView.setVisibility(View.VISIBLE);
@@ -445,7 +452,7 @@ public class PullRefreshLayout extends ViewGroup {
         }
     };
 
-    private Animation.AnimationListener mToStartListener = new Animation.AnimationListener() {
+    private final Animation.AnimationListener mToStartListener = new Animation.AnimationListener() {
         @Override
         public void onAnimationStart(Animation animation) {
             mRefreshDrawable.stop();
@@ -485,35 +492,23 @@ public class PullRefreshLayout extends ViewGroup {
         return 0f;
     }
 
-    private void setTargetOffsetTop(int offset, boolean requiresUpdate) {
+    private void setTargetOffsetTop(int offset) {
 //        mRefreshView.bringToFront();
         mTarget.offsetTopAndBottom(offset);
         mCurrentOffsetTop = mTarget.getTop();
         mRefreshDrawable.offsetTopAndBottom(offset);
-        if (requiresUpdate && android.os.Build.VERSION.SDK_INT < 11) {
-            invalidate();
-        }
     }
 
     private boolean canChildScrollUp() {
-        if (android.os.Build.VERSION.SDK_INT < 14) {
-            if (mTarget instanceof AbsListView) {
-                final AbsListView absListView = (AbsListView) mTarget;
-                return absListView.getChildCount() > 0
-                        && (absListView.getFirstVisiblePosition() > 0 || absListView.getChildAt(0)
-                        .getTop() < absListView.getPaddingTop());
-            } else {
-                return mTarget.getScrollY() > 0;
-            }
-        } else {
-            return ViewCompat.canScrollVertically(mTarget, -1);
-        }
+        return ViewCompat.canScrollVertically(mTarget, -1);
     }
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         try {
+
             ensureTarget();
+
             if (mTarget == null)
                 return;
 
@@ -526,9 +521,11 @@ public class PullRefreshLayout extends ViewGroup {
 
             mTarget.layout(left, top + mTarget.getTop(), left + width - right, top + height - bottom + mTarget.getTop());
             mRefreshView.layout(left, top, left + width - right, top + height - bottom);
+
         } catch (Throwable th) {
-            if (onErrorListener != null)
+            if (onErrorListener != null) {
                 onErrorListener.onError(th);
+            }
         }
     }
 
@@ -544,12 +541,12 @@ public class PullRefreshLayout extends ViewGroup {
         onErrorListener = listener;
     }
 
-    public static interface OnRefreshListener {
-        public void onRefresh();
+    public interface OnRefreshListener {
+        void onRefresh();
     }
 
-    public static interface OnErrorListener {
-        public void onError(Throwable t);
+    public interface OnErrorListener {
+        void onError(Throwable t);
     }
 
 }

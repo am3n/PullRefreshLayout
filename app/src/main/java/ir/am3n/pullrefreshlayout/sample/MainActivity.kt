@@ -2,6 +2,7 @@ package ir.am3n.pullrefreshlayout.sample
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.core.view.postDelayed
 import ir.am3n.pullrefreshlayout.PullRefreshLayout
@@ -16,9 +17,16 @@ class MainActivity : AppCompatActivity() {
 
         prl?.setOnRefreshListener {
             Toast.makeText(this, "Hello", Toast.LENGTH_SHORT).show()
-            prl.setRefreshing(false)
-            //prl.postDelayed(1000) { prl.setRefreshing(false) }
+            prl.cancelRefreshing()
         }
+
+        prl?.setOnErrorListener {
+            Log.d("MainActivity", "on error")
+        }
+
+        prl.autoCancellationEnabled = true
+        prl.autoCancellationTimeout = 5 * 1000
+        prl.setRefreshing()
 
     }
 

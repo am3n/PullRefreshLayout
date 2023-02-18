@@ -3,67 +3,67 @@ PullRefreshLayout
 ![MinAPI](https://img.shields.io/badge/API-15%2B-blue)
 [![Release](https://jitpack.io/v/am3n/PullRefreshLayout.svg)](https://jitpack.io/#am3n/PullRefreshLayout)
 
-This component like SwipeRefreshLayout, it is more beautiful than SwipeRefreshLayout.
+#### Beautiful swipe refresh layout!
 
+## Installation
 
-# Usage
+To use this library in your project add this to your build.gradle:
 
-Add dependency.
-
-```
+```gradle
+allprojects {
+    repositories {
+        maven { url 'https://jitpack.io' }
+    }
+}
 dependencies {
     implementation 'com.github.am3n:PullRefreshLayout:NEWEST-VERSION'
 }
 ```
 
-Use method like SwipeRefreshLayout's usage.  
 
-Use it in your layout xml.
+## Usage
+
+Add it in your layout xml.
 
 ```xml 
 <ir.am3n.pullrefreshlayout.PullRefreshLayout
-    android:id="@+id/swipeRefreshLayout"
+    android:id="@+id/prl"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-
 	<!-- ListView、ScrollView、RecyclerView、Other -->
-	
 </ir.am3n.pullrefreshlayout.PullRefreshLayout>
-
 ```
 
 Get instance and use it.
 
 ```java
-PullRefreshLayout prl = (PullRefreshLayout) findViewById(...);
-
+PullRefreshLayout prl = (PullRefreshLayout) findViewById(R.id.prl);
 // listen refresh event
 prl.setOnRefreshListener(new PullRefreshLayout.OnRefreshListener() {
     @Override
     public void onRefresh() {
-        // start refresh
+        // refreshing
     }
 });
-
-// refresh complete 
-prl.setRefreshing(false);
+// cancel refresh
+prl.cancelRefreshing();
 
 ```
-
-Change the refresh style, there are five styles of use, `MATERIAL`、`CIRCLES`、 `WATER_DROP`、`RING` and `SMARTISAN`.  
+---
+#### Change the refresh style.
+There are five styles of use, `MATERIAL`、`CIRCLES`、 `WATER_DROP`、`RING` and `SMARTISAN`.  
 
 In java, call `setRefreshStyle` method.
 
 ```java
 prl.setRefreshStyle(PullRefreshLayout.STYLE_CIRCLES);
-
 ```
 
 In xml, use attributes.
 
 ```xml
 <ir.am3n.pullrefreshlayout.PullRefreshLayout
-    android:id="@+id/swipeRefreshLayout"
+    android:id="@+id/prl"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:refreshType="water_drop">
@@ -71,17 +71,13 @@ In xml, use attributes.
 </ir.am3n.pullrefreshlayout.PullRefreshLayout>
 
 ```
- 
-Change the color scheme.
+---
+#### Change the color scheme.
 In java, call `setColorSchemeColors` method. The int array length must be 4.
-
 ```java
 prl.setColorSchemeColors(int []);
-
 ```
-
 For Smartisan style, it has only one color, can call 'setColor' method, to set one color.
-
 ```java
 prl.setColor(int);
 ```
@@ -90,76 +86,36 @@ In xml, use attributes.
 
 ```xml
 <ir.am3n.pullrefreshlayout.PullRefreshLayout
-    android:id="@+id/swipeRefreshLayout"
+    android:id="@+id/prl"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:refreshColors="@array/scheme_colors"
     app:refreshColor="@color/one_color">
 	
 </ir.am3n.pullrefreshlayout.PullRefreshLayout>
-
 ```
-
-If you do not like these styles, you can customize the refresh style.
+---
+#### Customize the refresh style.
 
 ```java
-class CustomDrawable extends RefreshDrawable {
+class CustomDrawable extends RefreshDrawable { ... }
 
-    @Override
-    public void setPercent(float percent) {
-        // Percentage of the maximum distance of the drop-down refresh.
-    }
-
-    @Override
-    public void setColorSchemeColors(int[] colorSchemeColors) {
-        
-    }
-
-    @Override
-    public void offsetTopAndBottom(int offset) {
-        // Drop-down offset.
-    }
-
-    @Override
-    public void start() {
-        isRunning = true;
-        // Refresh started, start refresh animation.
-    }
-
-    @Override
-    public void stop() {
-        isRunning = false;
-        // Refresh completed, stop refresh animation.
-    }
-
-    @Override
-    public boolean isRunning() {
-        return isRunning;
-    }
-
-    @Override
-    public void draw(Canvas canvas) {
-        // Draw custom style.
-    }
-
-}
-
-```
-
-Call `setRefreshDrawable()` method to use your custom refresh drawable.
-
-```java
 prl.setRefreshDrawable(new CustomDrawable());
 ```
+---
+#### Enable auto cancel refreshing
+```java
+prl.autoCancellationEnabled = true;
+prl.autoCancellationTimeout = 5 * 1000;
+```
 
-# Thanks
+## Thanks
 
 * [PullRefreshLayout](https://github.com/baoyongzhang/android-PullRefreshLayout)
 * [SwipeRefreshLayout](https://developer.android.com/reference/android/support/v4/widget/SwipeRefreshLayout.html)
 * [GoogleProgressBar](https://github.com/jpardogo/GoogleProgressBar) 
 
-License
-=======
+## License
 
     The MIT License (MIT)
 
