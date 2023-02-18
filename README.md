@@ -1,5 +1,7 @@
 PullRefreshLayout
 =========================
+![MinAPI](https://img.shields.io/badge/API-15%2B-blue)
+[![Release](https://jitpack.io/v/am3n/PullRefreshLayout.svg)](https://jitpack.io/#am3n/PullRefreshLayout)
 
 This component like SwipeRefreshLayout, it is more beautiful than SwipeRefreshLayout.
 
@@ -10,7 +12,7 @@ Add dependency.
 
 ```
 dependencies {
-    implementation 'com.github.am3n:PullRefreshLayout:1.0.0'
+    implementation 'com.github.am3n:PullRefreshLayout:NEWEST-VERSION'
 }
 ```
 
@@ -33,10 +35,10 @@ Use it in your layout xml.
 Get instance and use it.
 
 ```java
-PullRefreshLayout layout = (PullRefreshLayout) findViewById(...);
+PullRefreshLayout prl = (PullRefreshLayout) findViewById(...);
 
 // listen refresh event
-layout.setOnRefreshListener(new PullRefreshLayout.OnRefreshListener() {
+prl.setOnRefreshListener(new PullRefreshLayout.OnRefreshListener() {
     @Override
     public void onRefresh() {
         // start refresh
@@ -44,7 +46,7 @@ layout.setOnRefreshListener(new PullRefreshLayout.OnRefreshListener() {
 });
 
 // refresh complete 
-layout.setRefreshing(false);
+prl.setRefreshing(false);
 
 ```
 
@@ -53,7 +55,7 @@ Change the refresh style, there are five styles of use, `MATERIAL`„ÄÅ`CIRCLES`„Ä
 In java, call `setRefreshStyle` method.
 
 ```java
-layout.setRefreshStyle(PullRefreshLayout.STYLE_CIRCLES);
+prl.setRefreshStyle(PullRefreshLayout.STYLE_CIRCLES);
 
 ```
 
@@ -74,14 +76,14 @@ Change the color scheme.
 In java, call `setColorSchemeColors` method. The int array length must be 4.
 
 ```java
-layout.setColorSchemeColors(int []);
+prl.setColorSchemeColors(int []);
 
 ```
 
 For Smartisan style, it has only one color, can call 'setColor' method, to set one color.
 
 ```java
-layout.setColor(int);
+prl.setColor(int);
 ```
 
 In xml, use attributes.
@@ -147,7 +149,7 @@ class CustomDrawable extends RefreshDrawable {
 Call `setRefreshDrawable()` method to use your custom refresh drawable.
 
 ```java
-layout.setRefreshDrawable(new CustomDrawable());
+prl.setRefreshDrawable(new CustomDrawable());
 ```
 
 # Thanks
